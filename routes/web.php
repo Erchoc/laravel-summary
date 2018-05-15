@@ -19,3 +19,4 @@ Route::get('dbtest', function () {
 	$data = DB::table('users')->get();
     return $data;
 });
+
