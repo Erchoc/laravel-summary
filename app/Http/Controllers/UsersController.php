@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Validator;
 use Illuminate\Http\Request;
 
 class UsersController extends Controller
@@ -40,22 +41,23 @@ class UsersController extends Controller
      */
     public function store(Request $request)
     {
+        dd($request->all());
         $this->validate($request, [
             'name'    => 'required | max:255',
             'email'   => 'required | email',
             'password'=> 'required | max:255'
         ]);
 
-        $res = \DB::table('users')->insert([
+        $res = \DB::table('users')->insertGetId([
                     'name'    => $request->input('name'),
                     'email'   => $request->input('email'),
                     'password'=> $request->input('password')
                 ]);
-        $msg = !$res?'暂无数据':'数据获取成功';
+        $msg = ($res==true)?'数据插入成功':'暂无数据';
 
         return [
             'msg' => $msg,
-            'data'=> $res
+            'data'=> \DB::table('users')->where('id', $res)->get()
         ];
     }
 
@@ -97,28 +99,45 @@ class UsersController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'name'    => 'required | max:255',
-            'email'   => 'required | email',
-            'password'=> 'required | max:255'
-        ]);
+        $rule = [
+            'name'    => 'required',
+            'email'   => 'required|email',
+            'password'=> 'required'
+        ];
+        $message = [
+            'name.required'     => '姓名不允许为空',
+            'email.required'    => '邮箱不允许为空',
+            'email.email'       => '邮箱验证不通过',
+            'password.required' => '密码不允许为空',
+        ];
+        $validate = Validator::make($request->all(), $rule, $message);
+        if ($validate->fails()) {
+            $msg = '验证不通过';
+            return [
+                'msg' => $msg
+            ];
+        }
 
         $name    = $request->input('name');
         $email   = $request->input('email');
         $password= $request->input('password');
+
         $userIns =\DB::table('users')->where('id', $id)->get();
+        if ($userIns->isEmpty()) {
+            $msg = '未查询到相关数据';
+        } else {
+            $sum = \DB::table('users')->where('id', $id)->update([
+                'name'    => $name?$name:$userIns['name'],
+                'email'   => $email?$email:$userIns['email'],
+                'password'=> $password?$password:$userIns['password']
+            ]);
+            $msg = ($sum==true)?'更新数据成功':'修改失败';
+            $data = \DB::table('users')->where('id', $id)->get();
+        }
 
-        dd($userIns);
-
-        $sum = \DB::table('users')->where('id', $id)->update([
-            'name'  => $name?$name:$userIns['name'],
-            'email' => $email?$email:$userIns['email'],
-            password=> $password?$password:$userIns['password']
-        ]);
-        $msg = !$sum?'更新数据失败':'更新数据成功';
         return [
             'msg' => $msg,
-            'data'=> 'ok'
+            'data'=> $data
         ];
     }
 
