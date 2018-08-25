@@ -17,7 +17,13 @@
 3. 修复`users`实体插入成功后返回插入数据的BUG
 4. 修复`users`实体更新无法获取`$request`的问题
 
+### 发布日期：2018-5-24
+- 添加实体`articles`，使用路由知识而非直接使用资源实体类型
+- 使用`fzaninotto/faker`库实现对`artiles`的中文数据填充和时间戳维护
 
+### 发布日期：2018-5-26
+- 使用自定义验证规则`Validator`过滤`REQUEST`数据
+- 使用`Eloquent`实现实体`Article`的增删改查功能API
 
 
 

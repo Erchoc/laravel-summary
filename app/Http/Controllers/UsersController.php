@@ -14,6 +14,8 @@ class UsersController extends Controller
      */
     public function index()
     {
+        $arr = ['name'=> 'yangxuejin'];
+        return $arr;
         $users = \DB::table('users')->get();
         $msg = $users->isEmpty()?'暂无数据':'数据获取成功';
 
